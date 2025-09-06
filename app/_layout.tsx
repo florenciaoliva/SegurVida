@@ -1,8 +1,9 @@
 import { ConvexAuthProvider } from "@convex-dev/auth/react";
-import { ConvexReactClient } from "convex/react";
+import { ConvexReactClient, Authenticated, Unauthenticated, AuthLoading } from "convex/react";
 import { Stack } from "expo-router";
 import * as SecureStore from "expo-secure-store";
-import { Platform } from "react-native";
+import { Platform, View, ActivityIndicator, StyleSheet } from "react-native";
+import SignIn from "./sign-in";
 
 const convex = new ConvexReactClient(process.env.EXPO_PUBLIC_CONVEX_URL!, {
   unsavedChangesWarning: false,
@@ -14,15 +15,50 @@ const secureStorage = {
   removeItem: SecureStore.deleteItemAsync,
 };
 
+function RootLayoutNav() {
+  return (
+    <>
+      <AuthLoading>
+        <View style={styles.loadingContainer}>
+          <ActivityIndicator size="large" color="#007AFF" />
+        </View>
+      </AuthLoading>
+      
+      <Unauthenticated>
+        <SignIn />
+      </Unauthenticated>
+      
+      <Authenticated>
+        <Stack>
+          <Stack.Screen 
+            name="index" 
+            options={{
+              title: "Home",
+              headerShown: true,
+            }}
+          />
+        </Stack>
+      </Authenticated>
+    </>
+  );
+}
+
 export default function RootLayout() {
   return (
     <ConvexAuthProvider
       client={convex}
       storage={Platform.OS === "android" || Platform.OS === "ios" ? secureStorage : undefined}
     >
-      <Stack>
-        <Stack.Screen name="index" />
-      </Stack>
+      <RootLayoutNav />
     </ConvexAuthProvider>
   );
 }
+
+const styles = StyleSheet.create({
+  loadingContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "#f5f5f5",
+  },
+});
