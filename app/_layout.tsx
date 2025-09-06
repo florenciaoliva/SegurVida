@@ -2,7 +2,7 @@ import { ConvexAuthProvider } from "@convex-dev/auth/react";
 import { Authenticated, AuthLoading, ConvexReactClient, Unauthenticated } from "convex/react";
 import { Stack } from "expo-router";
 import * as SecureStore from "expo-secure-store";
-import { ActivityIndicator, Platform, StyleSheet, View } from "react-native";
+import { ActivityIndicator, Platform, View } from "react-native";
 import "../global.css";
 import SignIn from "./sign-in";
 
@@ -20,7 +20,7 @@ function RootLayoutNav() {
   return (
     <>
       <AuthLoading>
-        <View style={styles.loadingContainer}>
+        <View className="flex-1 justify-center items-center bg-gray-100">
           <ActivityIndicator size="large" color="#007AFF" />
         </View>
       </AuthLoading>
@@ -54,12 +54,3 @@ export default function RootLayout() {
     </ConvexAuthProvider>
   );
 }
-
-const styles = StyleSheet.create({
-  loadingContainer: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-    backgroundColor: "#f5f5f5",
-  },
-});

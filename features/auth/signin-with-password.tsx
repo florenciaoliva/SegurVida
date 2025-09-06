@@ -1,4 +1,5 @@
 import { INVALID_PASSWORD } from "@/convex/errors";
+import { cn } from "@/lib/utils";
 import { useAuthActions } from "@convex-dev/auth/react";
 import { ConvexError } from "convex/values";
 import { useState, useMemo } from "react";
@@ -8,7 +9,6 @@ import {
   KeyboardAvoidingView,
   Platform,
   ScrollView,
-  StyleSheet,
   Text,
   TextInput,
   TouchableOpacity,
@@ -131,17 +131,17 @@ export function SignInWithPassword({
   const renderPasswordRequirements = () => {
     if (typeof passwordRequirements === "string") {
       return (
-        <Text style={[
-          styles.requirementsText,
-          passwordTouched && !passwordValidation.isValid && styles.requirementsTextError
-        ]}>
+        <Text className={cn(
+          "text-xs text-gray-600 -mt-2 mb-3",
+          passwordTouched && !passwordValidation.isValid && "text-red-500"
+        )}>
           {passwordRequirements}
         </Text>
       );
     }
 
     return (
-      <View style={styles.requirementsContainer}>
+      <View className="-mt-2 mb-4">
         {requirements.minLength && (
           <RequirementItem
             met={passwordValidation.checks.minLength}
@@ -184,17 +184,18 @@ export function SignInWithPassword({
   return (
     <KeyboardAvoidingView
       behavior={Platform.OS === "ios" ? "padding" : "height"}
-      style={styles.container}
+      className="flex-1"
     >
       <ScrollView showsVerticalScrollIndicator={false}>
-        <View style={styles.form}>
-          <Text style={styles.label}>Email</Text>
+        <View className="p-5">
+          <Text className="text-base font-medium mb-2 text-gray-800">Email</Text>
           <TextInput
-            style={[
-              styles.input,
-              emailTouched && !isEmailValid && styles.inputError,
-              emailTouched && isEmailValid && styles.inputValid,
-            ]}
+            className={cn(
+              "border rounded-lg p-3 text-base mb-4 bg-white text-gray-800",
+              emailTouched && !isEmailValid && "border-red-500 mb-1",
+              emailTouched && isEmailValid && "border-green-500",
+              (!emailTouched || (!isEmailValid && !emailTouched)) && "border-gray-300"
+            )}
             value={email}
             onChangeText={setEmail}
             onBlur={() => setEmailTouched(true)}
@@ -206,24 +207,25 @@ export function SignInWithPassword({
             editable={!submitting}
           />
           {emailTouched && !isEmailValid && (
-            <Text style={styles.errorText}>Please enter a valid email address</Text>
+            <Text className="text-red-500 text-xs mb-3 -mt-3">Please enter a valid email address</Text>
           )}
 
-          <View style={styles.passwordContainer}>
-            <Text style={styles.label}>Password</Text>
+          <View className="flex-row justify-between items-center mb-2">
+            <Text className="text-base font-medium text-gray-800">Password</Text>
             {handlePasswordReset && flow === "signIn" && (
               <TouchableOpacity onPress={handlePasswordReset}>
-                <Text style={styles.linkText}>Forgot your password?</Text>
+                <Text className="text-blue-500 text-sm">Forgot your password?</Text>
               </TouchableOpacity>
             )}
           </View>
 
           <TextInput
-            style={[
-              styles.input,
-              flow === "signUp" && passwordTouched && !passwordValidation.isValid && styles.inputError,
-              flow === "signUp" && passwordTouched && passwordValidation.isValid && styles.inputValid,
-            ]}
+            className={cn(
+              "border rounded-lg p-3 text-base mb-4 bg-white text-gray-800",
+              flow === "signUp" && passwordTouched && !passwordValidation.isValid && "border-red-500",
+              flow === "signUp" && passwordTouched && passwordValidation.isValid && "border-green-500",
+              (flow === "signIn" || !passwordTouched) && "border-gray-300"
+            )}
             value={password}
             onChangeText={setPassword}
             onBlur={() => setPasswordTouched(true)}
@@ -239,20 +241,20 @@ export function SignInWithPassword({
           {flow === "signUp" && customSignUp}
 
           <TouchableOpacity
-            style={[
-              styles.button,
-              (!isFormValid || submitting) && styles.buttonDisabled
-            ]}
+            className={cn(
+              "rounded-lg p-4 items-center mt-2 mb-4",
+              (!isFormValid || submitting) ? "bg-gray-300 opacity-70" : "bg-blue-500"
+            )}
             onPress={handleSubmit}
             disabled={!isFormValid || submitting}
           >
             {submitting ? (
               <ActivityIndicator color="#fff" />
             ) : (
-              <Text style={[
-                styles.buttonText,
-                (!isFormValid || submitting) && styles.buttonTextDisabled
-              ]}>
+              <Text className={cn(
+                "text-base font-semibold",
+                (!isFormValid || submitting) ? "text-gray-100" : "text-white"
+              )}>
                 {flow === "signIn" ? "Sign in" : "Sign up"}
               </Text>
             )}
@@ -266,7 +268,7 @@ export function SignInWithPassword({
             }}
             disabled={submitting}
           >
-            <Text style={styles.switchText}>
+            <Text className="text-blue-500 text-sm text-center mt-2">
               {flow === "signIn"
                 ? "Don't have an account? Sign up"
                 : "Already have an account? Sign in"}
@@ -288,137 +290,27 @@ function RequirementItem({
   touched: boolean;
 }) {
   return (
-    <View style={styles.requirementItem}>
-      <Text style={[
-        styles.requirementIcon,
-        met && styles.requirementIconMet,
-        touched && !met && styles.requirementIconError,
-      ]}>
+    <View className="flex-row items-center mb-1.5">
+      <Text className={cn(
+        "text-sm mr-2 w-4 text-center",
+        {
+          "text-green-500 font-bold": met,
+          "text-red-500": touched && !met,
+          "text-gray-400": !met && !touched
+        }
+      )}>
         {met ? "✓" : "○"}
       </Text>
-      <Text style={[
-        styles.requirementText,
-        met && styles.requirementTextMet,
-        touched && !met && styles.requirementTextError,
-      ]}>
+      <Text className={cn(
+        "text-xs",
+        {
+          "text-green-500": met,
+          "text-red-500": touched && !met,
+          "text-gray-600": !met && !touched
+        }
+      )}>
         {text}
       </Text>
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
-  form: {
-    padding: 20,
-  },
-  label: {
-    fontSize: 16,
-    fontWeight: "500",
-    marginBottom: 8,
-    color: "#333",
-  },
-  input: {
-    borderWidth: 1,
-    borderColor: "#ddd",
-    borderRadius: 8,
-    padding: 12,
-    fontSize: 16,
-    marginBottom: 16,
-    backgroundColor: "#fff",
-    color: "#333",
-  },
-  inputError: {
-    borderColor: "#FF5252",
-    marginBottom: 4,
-  },
-  inputValid: {
-    borderColor: "#4CAF50",
-  },
-  errorText: {
-    color: "#FF5252",
-    fontSize: 12,
-    marginBottom: 12,
-    marginTop: -4,
-  },
-  passwordContainer: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    marginBottom: 8,
-  },
-  linkText: {
-    color: "#007AFF",
-    fontSize: 14,
-  },
-  requirementsContainer: {
-    marginTop: -8,
-    marginBottom: 16,
-  },
-  requirementsText: {
-    fontSize: 12,
-    color: "#666",
-    marginTop: -8,
-    marginBottom: 12,
-  },
-  requirementsTextError: {
-    color: "#FF5252",
-  },
-  requirementItem: {
-    flexDirection: "row",
-    alignItems: "center",
-    marginBottom: 6,
-  },
-  requirementIcon: {
-    fontSize: 14,
-    marginRight: 8,
-    color: "#999",
-    width: 16,
-    textAlign: "center",
-  },
-  requirementIconMet: {
-    color: "#4CAF50",
-    fontWeight: "bold",
-  },
-  requirementIconError: {
-    color: "#FF5252",
-  },
-  requirementText: {
-    fontSize: 12,
-    color: "#666",
-  },
-  requirementTextMet: {
-    color: "#4CAF50",
-  },
-  requirementTextError: {
-    color: "#FF5252",
-  },
-  button: {
-    backgroundColor: "#007AFF",
-    borderRadius: 8,
-    padding: 16,
-    alignItems: "center",
-    marginTop: 8,
-    marginBottom: 16,
-  },
-  buttonDisabled: {
-    backgroundColor: "#ccc",
-    opacity: 0.7,
-  },
-  buttonText: {
-    color: "#fff",
-    fontSize: 16,
-    fontWeight: "600",
-  },
-  buttonTextDisabled: {
-    color: "#f5f5f5",
-  },
-  switchText: {
-    color: "#007AFF",
-    fontSize: 14,
-    textAlign: "center",
-    marginTop: 8,
-  },
-});

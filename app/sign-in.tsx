@@ -1,5 +1,5 @@
-import { View, StyleSheet, SafeAreaView } from "react-native";
-import { SignInWithPassword } from "./features/auth/signin-with-password";
+import { SignInWithPassword } from "@/features/auth/signin-with-password";
+import { SafeAreaView, View } from "react-native";
 
 export default function SignIn() {
   const handleSent = (email: string) => {
@@ -12,8 +12,8 @@ export default function SignIn() {
   };
 
   return (
-    <SafeAreaView style={styles.container}>
-      <View style={styles.content}>
+    <SafeAreaView className="flex-1 bg-gray-100">
+      <View className="flex-1 justify-center">
         <SignInWithPassword
           handleSent={handleSent}
           handlePasswordReset={handlePasswordReset}
@@ -29,14 +29,3 @@ export default function SignIn() {
     </SafeAreaView>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: "#f5f5f5",
-  },
-  content: {
-    flex: 1,
-    justifyContent: "center",
-  },
-});
