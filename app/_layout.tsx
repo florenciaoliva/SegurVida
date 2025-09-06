@@ -1,8 +1,9 @@
 import { ConvexAuthProvider } from "@convex-dev/auth/react";
-import { ConvexReactClient, Authenticated, Unauthenticated, AuthLoading } from "convex/react";
+import { Authenticated, AuthLoading, ConvexReactClient, Unauthenticated } from "convex/react";
 import { Stack } from "expo-router";
 import * as SecureStore from "expo-secure-store";
-import { Platform, View, ActivityIndicator, StyleSheet } from "react-native";
+import { ActivityIndicator, Platform, StyleSheet, View } from "react-native";
+import "../global.css";
 import SignIn from "./sign-in";
 
 const convex = new ConvexReactClient(process.env.EXPO_PUBLIC_CONVEX_URL!, {
@@ -23,15 +24,15 @@ function RootLayoutNav() {
           <ActivityIndicator size="large" color="#007AFF" />
         </View>
       </AuthLoading>
-      
+
       <Unauthenticated>
         <SignIn />
       </Unauthenticated>
-      
+
       <Authenticated>
         <Stack>
-          <Stack.Screen 
-            name="index" 
+          <Stack.Screen
+            name="index"
             options={{
               title: "Home",
               headerShown: true,
