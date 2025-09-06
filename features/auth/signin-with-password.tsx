@@ -2,7 +2,7 @@ import { INVALID_PASSWORD } from "@/convex/errors";
 import { cn } from "@/lib/utils";
 import { useAuthActions } from "@convex-dev/auth/react";
 import { ConvexError } from "convex/values";
-import { useState, useMemo } from "react";
+import { useMemo, useState } from "react";
 import {
   ActivityIndicator,
   Alert,
@@ -77,7 +77,7 @@ export function SignInWithPassword({
       hasSpecialChar: !requirements.requireSpecialChar || /[!@#$%^&*(),.?":{}|<>]/.test(password),
     };
 
-    const isValid = Object.values(checks).every(check => check);
+    const isValid = Object.values(checks).every((check) => check);
 
     return { checks, isValid };
   }, [password, requirements]);
@@ -94,7 +94,7 @@ export function SignInWithPassword({
     if (!isFormValid) {
       Alert.alert(
         "Validation Error",
-        flow === "signIn" 
+        flow === "signIn"
           ? "Please enter a valid email and password"
           : "Please ensure all requirements are met"
       );
@@ -131,10 +131,12 @@ export function SignInWithPassword({
   const renderPasswordRequirements = () => {
     if (typeof passwordRequirements === "string") {
       return (
-        <Text className={cn(
-          "text-xs text-gray-600 -mt-2 mb-3",
-          passwordTouched && !passwordValidation.isValid && "text-red-500"
-        )}>
+        <Text
+          className={cn(
+            "text-xs text-gray-600 -mt-2 mb-3",
+            passwordTouched && !passwordValidation.isValid && "text-red-500"
+          )}
+        >
           {passwordRequirements}
         </Text>
       );
@@ -191,7 +193,7 @@ export function SignInWithPassword({
           <Text className="text-base font-medium mb-2 text-gray-800">Email</Text>
           <TextInput
             className={cn(
-              "border rounded-lg p-3 text-base mb-4 bg-white text-gray-800",
+              "border-2 rounded-lg px-3 py-4 text-base mb-4 bg-white text-gray-800 leading-tight",
               emailTouched && !isEmailValid && "border-red-500 mb-1",
               emailTouched && isEmailValid && "border-green-500",
               (!emailTouched || (!isEmailValid && !emailTouched)) && "border-gray-300"
@@ -207,7 +209,9 @@ export function SignInWithPassword({
             editable={!submitting}
           />
           {emailTouched && !isEmailValid && (
-            <Text className="text-red-500 text-xs mb-3 -mt-3">Please enter a valid email address</Text>
+            <Text className="text-red-500 text-xs mb-3 -mt-3">
+              Please enter a valid email address
+            </Text>
           )}
 
           <View className="flex-row justify-between items-center mb-2">
@@ -221,9 +225,15 @@ export function SignInWithPassword({
 
           <TextInput
             className={cn(
-              "border rounded-lg p-3 text-base mb-4 bg-white text-gray-800",
-              flow === "signUp" && passwordTouched && !passwordValidation.isValid && "border-red-500",
-              flow === "signUp" && passwordTouched && passwordValidation.isValid && "border-green-500",
+              "border-2 rounded-lg px-3 py-4 text-base mb-4 bg-white text-gray-800 leading-tight",
+              flow === "signUp" &&
+                passwordTouched &&
+                !passwordValidation.isValid &&
+                "border-red-500",
+              flow === "signUp" &&
+                passwordTouched &&
+                passwordValidation.isValid &&
+                "border-green-500",
               (flow === "signIn" || !passwordTouched) && "border-gray-300"
             )}
             value={password}
@@ -243,7 +253,7 @@ export function SignInWithPassword({
           <TouchableOpacity
             className={cn(
               "rounded-lg p-4 items-center mt-2 mb-4",
-              (!isFormValid || submitting) ? "bg-gray-300 opacity-70" : "bg-blue-500"
+              !isFormValid || submitting ? "bg-gray-300 opacity-70" : "bg-blue-500"
             )}
             onPress={handleSubmit}
             disabled={!isFormValid || submitting}
@@ -251,10 +261,12 @@ export function SignInWithPassword({
             {submitting ? (
               <ActivityIndicator color="#fff" />
             ) : (
-              <Text className={cn(
-                "text-base font-semibold",
-                (!isFormValid || submitting) ? "text-gray-100" : "text-white"
-              )}>
+              <Text
+                className={cn(
+                  "text-base font-semibold",
+                  !isFormValid || submitting ? "text-gray-100" : "text-white"
+                )}
+              >
                 {flow === "signIn" ? "Sign in" : "Sign up"}
               </Text>
             )}
@@ -280,35 +292,25 @@ export function SignInWithPassword({
   );
 }
 
-function RequirementItem({ 
-  met, 
-  text, 
-  touched 
-}: { 
-  met: boolean; 
-  text: string; 
-  touched: boolean;
-}) {
+function RequirementItem({ met, text, touched }: { met: boolean; text: string; touched: boolean }) {
   return (
     <View className="flex-row items-center mb-1.5">
-      <Text className={cn(
-        "text-sm mr-2 w-4 text-center",
-        {
+      <Text
+        className={cn("text-sm mr-2 w-4 text-center", {
           "text-green-500 font-bold": met,
           "text-red-500": touched && !met,
-          "text-gray-400": !met && !touched
-        }
-      )}>
+          "text-gray-400": !met && !touched,
+        })}
+      >
         {met ? "✓" : "○"}
       </Text>
-      <Text className={cn(
-        "text-xs",
-        {
+      <Text
+        className={cn("text-xs", {
           "text-green-500": met,
           "text-red-500": touched && !met,
-          "text-gray-600": !met && !touched
-        }
-      )}>
+          "text-gray-600": !met && !touched,
+        })}
+      >
         {text}
       </Text>
     </View>
