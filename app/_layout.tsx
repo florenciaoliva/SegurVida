@@ -32,6 +32,12 @@ function RootLayoutNav() {
       <Authenticated>
         <Stack>
           <Stack.Screen
+            name="(tabs)"
+            options={{
+              headerShown: false,
+            }}
+          />
+          <Stack.Screen
             name="index"
             options={{
               title: "Home",
