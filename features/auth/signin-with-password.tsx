@@ -15,6 +15,8 @@ import {
   View,
 } from "react-native";
 
+type UserRole = "user" | "caregiver" | "admin";
+
 interface PasswordRequirements {
   minLength?: number;
   requireUppercase?: boolean;
@@ -31,17 +33,96 @@ const DEFAULT_PASSWORD_REQUIREMENTS: PasswordRequirements = {
   requireSpecialChar: false,
 };
 
+function UserTypeSelector({
+  selectedRole,
+  onSelectRole,
+}: {
+  selectedRole: UserRole;
+  onSelectRole: (type: UserRole) => void;
+}) {
+  const types: { value: UserRole; label: string; description: string }[] = [
+    {
+      value: "user",
+      label: "Usuario",
+      description: "Persona que necesita asistencia de emergencia",
+    },
+    {
+      value: "caregiver",
+      label: "Cuidador",
+      description: "Familiar o profesional que cuida a otros",
+    },
+    {
+      value: "admin",
+      label: "Administrador",
+      description: "Gestiona el sistema y usuarios",
+    },
+  ];
+
+  return (
+    <View className="mb-4">
+      <Text className="text-base font-medium mb-2 text-gray-800">Tipo de Usuario</Text>
+      <View className="space-y-2 gap-2">
+        {types.map((type) => (
+          <TouchableOpacity
+            key={type.value}
+            className={cn(
+              "border-2 rounded-lg p-3 bg-white",
+              selectedRole === type.value ? "border-blue-500 bg-blue-50" : "border-gray-300"
+            )}
+            onPress={() => onSelectRole(type.value)}
+          >
+            <View className="flex-row items-center">
+              <View className="mr-3">
+                <View
+                  className={cn(
+                    "w-5 h-5 rounded-full border-2",
+                    selectedRole === type.value
+                      ? "border-blue-500 bg-blue-500"
+                      : "border-gray-400 bg-white"
+                  )}
+                >
+                  {selectedRole === type.value && (
+                    <View className="flex-1 items-center justify-center">
+                      <Text className="text-white text-xs font-bold">✓</Text>
+                    </View>
+                  )}
+                </View>
+              </View>
+              <View className="flex-1">
+                <Text
+                  className={cn(
+                    "text-base font-medium",
+                    selectedRole === type.value ? "text-blue-600" : "text-gray-800"
+                  )}
+                >
+                  {type.label}
+                </Text>
+                <Text
+                  className={cn(
+                    "text-xs",
+                    selectedRole === type.value ? "text-blue-500" : "text-gray-600"
+                  )}
+                >
+                  {type.description}
+                </Text>
+              </View>
+            </View>
+          </TouchableOpacity>
+        ))}
+      </View>
+    </View>
+  );
+}
+
 export function SignInWithPassword({
   provider,
   handleSent,
   handlePasswordReset,
-  customSignUp,
   passwordRequirements = DEFAULT_PASSWORD_REQUIREMENTS,
 }: {
   provider?: string;
   handleSent?: (email: string) => void;
   handlePasswordReset?: () => void;
-  customSignUp?: React.ReactNode;
   passwordRequirements?: PasswordRequirements | string;
 }) {
   const { signIn } = useAuthActions();
@@ -49,6 +130,7 @@ export function SignInWithPassword({
   const [submitting, setSubmitting] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [userRole, setUserRole] = useState<UserRole>("user");
   const [emailTouched, setEmailTouched] = useState(false);
   const [passwordTouched, setPasswordTouched] = useState(false);
 
@@ -107,6 +189,11 @@ export function SignInWithPassword({
     formData.append("email", email);
     formData.append("password", password);
     formData.append("flow", flow);
+
+    // Add userRole for sign-up flow
+    if (flow === "signUp" && userRole) {
+      formData.append("role", userRole);
+    }
 
     signIn(provider ?? "password", formData)
       .then(() => {
@@ -188,8 +275,22 @@ export function SignInWithPassword({
       behavior={Platform.OS === "ios" ? "padding" : "height"}
       className="flex-1"
     >
-      <ScrollView showsVerticalScrollIndicator={false}>
-        <View className="p-5">
+      <ScrollView
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={{ flexGrow: 1, justifyContent: "center" }}
+      >
+        <View className="p-5 justify-center">
+          <View className="mb-8">
+            <Text className="text-3xl font-bold text-gray-800 text-center mb-2">
+              {flow === "signIn" ? "Bienvenido" : "Crear Cuenta"}
+            </Text>
+            <Text className="text-base text-gray-600 text-center">
+              {flow === "signIn"
+                ? "Ingresa a tu cuenta de SegurVida"
+                : "Únete a SegurVida para estar protegido"}
+            </Text>
+          </View>
+
           <Text className="text-base font-medium mb-2 text-gray-800">Email</Text>
           <TextInput
             className={cn(
@@ -216,11 +317,12 @@ export function SignInWithPassword({
 
           <View className="flex-row justify-between items-center mb-2">
             <Text className="text-base font-medium text-gray-800">Password</Text>
-            {handlePasswordReset && flow === "signIn" && (
+            {/* TODO: check this and implement it: https://labs.convex.dev/auth/config/passwords#email-reset-setup */}
+            {/* {handlePasswordReset && flow === "signIn" && (
               <TouchableOpacity onPress={handlePasswordReset}>
                 <Text className="text-blue-500 text-sm">Forgot your password?</Text>
               </TouchableOpacity>
-            )}
+            )} */}
           </View>
 
           <TextInput
@@ -248,7 +350,9 @@ export function SignInWithPassword({
 
           {flow === "signUp" && renderPasswordRequirements()}
 
-          {flow === "signUp" && customSignUp}
+          {flow === "signUp" && (
+            <UserTypeSelector selectedRole={userRole} onSelectRole={setUserRole} />
+          )}
 
           <TouchableOpacity
             className={cn(
