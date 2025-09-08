@@ -48,3 +48,11 @@ Join our community of developers creating universal apps.
 
 - [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
 - [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+
+# Create google-services.json file
+
+https://stackoverflow.com/questions/78301058/expo-push-notifications-google-services-json-is-missing-for-firebase
+
+# Setup notifications
+
+https://docs.expo.dev/push-notifications/push-notifications-setup/#get-credentials-for-development-builds

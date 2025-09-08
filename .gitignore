@@ -37,3 +37,13 @@ yarn-error.*
 *.tsbuildinfo
 
 app-example
+
+# Android
+android/
+
+# iOS
+ios/
+
+# Firebase
+segurvida-9b3dd-firebase-adminsdk-fbsvc-a33da9094e.json
+google-services.json
