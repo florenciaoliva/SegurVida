@@ -1,135 +1,218 @@
+import { api } from "@/convex/_generated/api";
+import { Id } from "@/convex/_generated/dataModel";
 import { cn } from "@/lib/utils";
+import { useMutation, useQuery } from "convex/react";
 import { useState } from "react";
-import { Alert, Modal, ScrollView, Text, TouchableOpacity, View } from "react-native";
-
-interface EmergencyContact {
-  id: string;
-  name: string;
-  relationship: string;
-  phone: string;
-}
-
-const EMERGENCY_CONTACTS: EmergencyContact[] = [
-  { id: "1", name: "Juan García", relationship: "Padre", phone: "+54 11 1234-5678" },
-  { id: "2", name: "María García", relationship: "Madre", phone: "+54 11 2345-6789" },
-  { id: "3", name: "Carlos García", relationship: "Hermano", phone: "+54 11 3456-7890" },
-  { id: "4", name: "Ana Rodríguez", relationship: "Esposa", phone: "+54 11 4567-8901" },
-  { id: "5", name: "911", relationship: "Emergencias", phone: "911" },
-];
+import {
+  ActivityIndicator,
+  Alert,
+  ScrollView,
+  Text,
+  TouchableOpacity,
+  View,
+} from "react-native";
 
 export default function Profile() {
-  const [selectedContact, setSelectedContact] = useState<EmergencyContact | null>(
-    EMERGENCY_CONTACTS[0]
-  );
-  const [dropdownVisible, setDropdownVisible] = useState(false);
+  const currentUser = useQuery(api.users.viewer);
+  const availableCaregivers = useQuery(api.users.getAvailableCaregivers);
+  const myCaregivers = useQuery(api.users.getMyCaregiversList);
+  const updateMyCaregiversList = useMutation(api.users.updateMyCaregiversList);
 
-  const handleSelectContact = (contact: EmergencyContact) => {
-    setSelectedContact(contact);
-    setDropdownVisible(false);
-    Alert.alert(
-      "Contacto Actualizado",
-      `${contact.name} ha sido seleccionado como tu contacto de emergencia principal`
+  const [selectedCaregivers, setSelectedCaregivers] = useState<Id<"users">[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const [hasInitialized, setHasInitialized] = useState(false);
+
+  // Initialize selected caregivers when data loads
+  if (myCaregivers && !hasInitialized) {
+    setSelectedCaregivers(myCaregivers.map((c) => c._id));
+    setHasInitialized(true);
+  }
+
+  const toggleCaregiver = (caregiverId: Id<"users">) => {
+    setSelectedCaregivers((prev) =>
+      prev.includes(caregiverId)
+        ? prev.filter((id) => id !== caregiverId)
+        : [...prev, caregiverId]
     );
   };
 
-  return (
-    <View className="flex-1 p-5 bg-gray-100">
-      <Text className="text-3xl font-bold mt-16 mb-2 text-gray-800 text-center">
-        Perfil
-      </Text>
-      <Text className="text-lg text-gray-600 mb-10 text-center">
-        Configura tus preferencias de emergencia
-      </Text>
+  const handleSaveChanges = async () => {
+    setIsLoading(true);
+    try {
+      await updateMyCaregiversList({ caregiverIds: selectedCaregivers });
+      Alert.alert(
+        "Éxito",
+        "Los contactos de emergencia han sido actualizados correctamente"
+      );
+    } catch (error) {
+      Alert.alert("Error", "No se pudieron actualizar los contactos de emergencia");
+      console.error(error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
-      <View className="mb-6">
-        <Text className="text-base font-medium mb-2 text-gray-800">
-          Contacto de Emergencia Principal
+  // Show loading state
+  if (!currentUser || !availableCaregivers) {
+    return (
+      <View className="flex-1 bg-gray-100 justify-center items-center">
+        <ActivityIndicator size="large" color="#3B82F6" />
+        <Text className="text-gray-600 mt-4">Cargando perfil...</Text>
+      </View>
+    );
+  }
+
+  // Only users can select caregivers
+  if (currentUser.role !== "user") {
+    return (
+      <View className="flex-1 p-5 bg-gray-100">
+        <Text className="text-3xl font-bold mt-16 mb-2 text-gray-800 text-center">
+          Perfil
         </Text>
-        <TouchableOpacity
-          className={cn(
-            "border-2 rounded-lg px-3 py-4 bg-white",
-            dropdownVisible ? "border-blue-500" : "border-gray-300"
-          )}
-          onPress={() => setDropdownVisible(!dropdownVisible)}
-        >
-          <View className="flex-row justify-between items-center">
-            <View className="flex-1">
-              {selectedContact ? (
-                <>
-                  <Text className="text-base text-gray-800 font-medium">
-                    {selectedContact.name}
-                  </Text>
-                  <Text className="text-sm text-gray-600">
-                    {selectedContact.relationship} • {selectedContact.phone}
-                  </Text>
-                </>
-              ) : (
-                <Text className="text-base text-gray-400">Seleccionar contacto</Text>
-              )}
-            </View>
-            <Text className="text-gray-400 text-lg">{dropdownVisible ? "▲" : "▼"}</Text>
+        <Text className="text-lg text-gray-600 mb-4 text-center">
+          {currentUser.role === "caregiver" ? "Cuenta de Cuidador" : "Cuenta de Administrador"}
+        </Text>
+        
+        <View className="bg-white rounded-lg p-4 mt-4">
+          <Text className="text-base font-medium text-gray-800 mb-2">
+            Información de la cuenta
+          </Text>
+          <Text className="text-sm text-gray-600">Email: {currentUser.email}</Text>
+          <Text className="text-sm text-gray-600">
+            Rol: {currentUser.role === "caregiver" ? "Cuidador" : "Administrador"}
+          </Text>
+        </View>
+
+        {currentUser.role === "caregiver" && (
+          <View className="bg-blue-50 p-4 rounded-lg mt-4">
+            <Text className="text-sm text-blue-800">
+              ℹ️ Como cuidador, recibirás notificaciones de emergencia de los usuarios que te hayan seleccionado.
+            </Text>
           </View>
-        </TouchableOpacity>
+        )}
       </View>
+    );
+  }
 
-      <View className="bg-blue-50 p-4 rounded-lg">
-        <Text className="text-sm text-blue-800">
-          ℹ️ Este contacto recibirá las alertas de emergencia cuando presiones el botón de
-          emergencia en la pantalla principal.
-        </Text>
-      </View>
+  return (
+    <View className="flex-1 bg-gray-100">
+      <ScrollView showsVerticalScrollIndicator={false}>
+        <View className="p-5">
+          <Text className="text-3xl font-bold mt-16 mb-2 text-gray-800 text-center">
+            Perfil
+          </Text>
+          <Text className="text-lg text-gray-600 mb-6 text-center">
+            Configura tus contactos de emergencia
+          </Text>
 
-      <Modal
-        visible={dropdownVisible}
-        transparent={true}
-        animationType="fade"
-        onRequestClose={() => setDropdownVisible(false)}
-      >
-        <TouchableOpacity
-          className="flex-1 bg-black/30"
-          activeOpacity={1}
-          onPress={() => setDropdownVisible(false)}
-        >
-          <View className="flex-1 justify-center px-5">
-            <View className="bg-white rounded-lg max-h-96">
-              <View className="border-b border-gray-200 px-4 py-3">
-                <Text className="text-lg font-semibold text-gray-800">
-                  Seleccionar Contacto de Emergencia
+          {/* User Info */}
+          <View className="bg-white rounded-lg p-4 mb-6">
+            <Text className="text-base font-medium text-gray-800 mb-2">
+              Tu información
+            </Text>
+            <Text className="text-sm text-gray-600">Email: {currentUser.email}</Text>
+            <Text className="text-sm text-gray-600">
+              Nombre: {currentUser.name || "No especificado"}
+            </Text>
+          </View>
+
+          {/* Caregiver Selection */}
+          <View className="mb-6">
+            <Text className="text-base font-medium mb-3 text-gray-800">
+              Selecciona tus contactos de emergencia
+            </Text>
+            <Text className="text-sm text-gray-600 mb-4">
+              Estos contactos recibirán una notificación cuando presiones el botón de emergencia
+            </Text>
+
+            {availableCaregivers.length === 0 ? (
+              <View className="bg-gray-50 rounded-lg p-4">
+                <Text className="text-sm text-gray-600 text-center">
+                  No hay cuidadores disponibles en el sistema
                 </Text>
               </View>
-              <ScrollView className="max-h-80">
-                {EMERGENCY_CONTACTS.map((contact) => (
-                  <TouchableOpacity
-                    key={contact.id}
-                    className={cn(
-                      "px-4 py-3 border-b border-gray-100",
-                      selectedContact?.id === contact.id && "bg-blue-50"
-                    )}
-                    onPress={() => handleSelectContact(contact)}
-                  >
-                    <Text
+            ) : (
+              <View className="space-y-2 gap-2">
+                {availableCaregivers.map((caregiver) => {
+                  const isSelected = selectedCaregivers.includes(caregiver._id);
+                  return (
+                    <TouchableOpacity
+                      key={caregiver._id}
                       className={cn(
-                        "text-base font-medium",
-                        selectedContact?.id === contact.id ? "text-blue-600" : "text-gray-800"
+                        "border-2 rounded-lg p-3 bg-white",
+                        isSelected ? "border-blue-500 bg-blue-50" : "border-gray-300"
                       )}
+                      onPress={() => toggleCaregiver(caregiver._id)}
                     >
-                      {contact.name}
-                    </Text>
-                    <Text
-                      className={cn(
-                        "text-sm",
-                        selectedContact?.id === contact.id ? "text-blue-500" : "text-gray-600"
-                      )}
-                    >
-                      {contact.relationship} • {contact.phone}
-                    </Text>
-                  </TouchableOpacity>
-                ))}
-              </ScrollView>
-            </View>
+                      <View className="flex-row items-center">
+                        <View className="mr-3">
+                          <View
+                            className={cn(
+                              "w-5 h-5 rounded border-2",
+                              isSelected
+                                ? "border-blue-500 bg-blue-500"
+                                : "border-gray-400 bg-white"
+                            )}
+                          >
+                            {isSelected && (
+                              <View className="flex-1 items-center justify-center">
+                                <Text className="text-white text-xs font-bold">✓</Text>
+                              </View>
+                            )}
+                          </View>
+                        </View>
+                        <View className="flex-1">
+                          <Text
+                            className={cn(
+                              "text-base font-medium",
+                              isSelected ? "text-blue-600" : "text-gray-800"
+                            )}
+                          >
+                            {caregiver.name || caregiver.email}
+                          </Text>
+                          <Text
+                            className={cn(
+                              "text-xs",
+                              isSelected ? "text-blue-500" : "text-gray-600"
+                            )}
+                          >
+                            {caregiver.email}
+                          </Text>
+                        </View>
+                      </View>
+                    </TouchableOpacity>
+                  );
+                })}
+              </View>
+            )}
           </View>
-        </TouchableOpacity>
-      </Modal>
+
+          {/* Info box */}
+          <View className="bg-blue-50 p-4 rounded-lg mb-6">
+            <Text className="text-sm text-blue-800">
+              ℹ️ Tienes {selectedCaregivers.length} contacto(s) de emergencia seleccionado(s).
+              {selectedCaregivers.length === 0 &&
+                " Es importante tener al menos un contacto configurado."}
+            </Text>
+          </View>
+
+          {/* Save Button */}
+          <TouchableOpacity
+            className={cn(
+              "rounded-lg p-4 items-center",
+              isLoading ? "bg-gray-300" : "bg-blue-500"
+            )}
+            onPress={handleSaveChanges}
+            disabled={isLoading}
+          >
+            {isLoading ? (
+              <ActivityIndicator color="#fff" />
+            ) : (
+              <Text className="text-white text-base font-semibold">Guardar cambios</Text>
+            )}
+          </TouchableOpacity>
+        </View>
+      </ScrollView>
     </View>
   );
 }

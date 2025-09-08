@@ -14,7 +14,21 @@ const schema = defineSchema({
     isAnonymous: v.optional(v.boolean()),
     role: v.union(v.literal("user"), v.literal("caregiver"), v.literal("admin")),
     associatedUser: v.optional(v.id("users")), // for caregivers users, the user they are associated with
-  }).index("email", ["email"]),
+  })
+    .index("email", ["email"])
+    .index("associatedUser", ["associatedUser"]),
+  emergencies: defineTable({
+    fromUser: v.id("users"),
+    location: v.optional(
+      v.object({
+        latitude: v.number(),
+        longitude: v.number(),
+      })
+    ),
+    description: v.optional(v.string()),
+    status: v.union(v.literal("pending"), v.literal("in_progress"), v.literal("solved")),
+    notifications: v.optional(v.array(v.string())),
+  }).index("fromUser", ["fromUser"]),
 });
 
 export default schema;

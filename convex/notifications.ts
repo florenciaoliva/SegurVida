@@ -2,7 +2,7 @@ import { getAuthUserId } from "@convex-dev/auth/server";
 import { PushNotifications } from "@convex-dev/expo-push-notifications";
 import { v } from "convex/values";
 import { components } from "./_generated/api";
-import { mutation } from "./_generated/server";
+import { internalMutation, mutation } from "./_generated/server";
 
 const pushNotifications = new PushNotifications(components.pushNotifications);
 
@@ -19,5 +19,26 @@ export const recordPushNotificationToken = mutation({
       userId,
       pushToken: args.token,
     });
+  },
+});
+
+export const sendPushNotification = internalMutation({
+  args: {
+    title: v.string(),
+    body: v.optional(v.string()),
+    to: v.id("users"),
+    priority: v.optional(v.union(v.literal("default"), v.literal("normal"), v.literal("high"))),
+  },
+  handler: async (ctx, args) => {
+    const notificationId = await pushNotifications.sendPushNotification(ctx, {
+      userId: args.to,
+      notification: {
+        title: args.title,
+        body: args.body,
+        priority: args.priority,
+      },
+    });
+
+    return notificationId;
   },
 });
