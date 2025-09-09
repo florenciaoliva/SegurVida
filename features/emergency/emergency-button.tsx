@@ -12,18 +12,18 @@ export function EmergencyButton({ className }: { className?: string }) {
   const handleEmergency = useCallback(() => {
     // TODO: add modal to confirm a new emergency or mark the current emergency as solved
     if (currentActiveEmergency) {
-      Alert.alert("Emergency", "You already have an active emergency");
+      Alert.alert("Emergencia", "Ya tienes una emergencia activa");
       return;
     }
     // TODO: get location from the user's device
     createEmergencyWorkflow({
-      description: `Emergency, ${user?.name || "Unknown"}, needs help!`,
+      description: `Emergencia, ${user?.name || "Desconocido"}, necesita ayuda!`,
     })
       .then(() => {
-        Alert.alert("Emergency", "Emergency created successfully");
+        Alert.alert("Emergencia", "Emergencia creada exitosamente");
       })
       .catch((error) => {
-        Alert.alert("Error", "Failed to create emergency", error);
+        Alert.alert("Error", "Error al crear la emergencia", error);
         console.error(error);
       });
   }, []);

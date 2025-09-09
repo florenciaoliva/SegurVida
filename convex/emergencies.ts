@@ -18,6 +18,7 @@ export const createEmergencyWorkflow = mutation({
     if (!fromUser) {
       throw new Error("User not found");
     }
+
     const toUsers = await ctx.db
       .query("users")
       .withIndex("associatedUser", (q) => q.eq("associatedUser", fromUser))
@@ -35,7 +36,7 @@ export const createEmergencyWorkflow = mutation({
       for (const toUser of toUsers) {
         const notificationId = await ctx.runMutation(internal.notifications.sendPushNotification, {
           title: "Emergencia",
-          body: args.description || "Emergency, needs help!",
+          body: args.description || "Emergencia, se necesita ayuda!",
           to: toUser._id,
         });
 
@@ -68,7 +69,7 @@ export const createEmergencyWorkflow = mutation({
       const notificationId = await ctx.runMutation(internal.notifications.sendPushNotification, {
         title: "Emergencia",
         to: toUser._id,
-        body: args.description || "Emergency, needs help!",
+        body: args.description || "Emergencia, se necesita ayuda!",
       });
 
       if (!notificationId) {
@@ -77,6 +78,7 @@ export const createEmergencyWorkflow = mutation({
 
       notificationIds.push(notificationId);
     }
+
     // 3. update emergency
     await ctx.runMutation(internal.emergencies.updateNotifications, {
       emergencyId,
@@ -115,5 +117,40 @@ export const getCurrentActiveEmergency = query({
       .withIndex("fromUser", (q) => q.eq("fromUser", userId))
       .filter((q) => q.not(q.eq(q.field("status"), "solved")))
       .first();
+  },
+});
+
+// Get all emergencies for the current user (both sent and received)
+export const getMyEmergencies = query({
+  handler: async (ctx) => {
+    const userId = await getAuthUserId(ctx);
+    if (!userId) {
+      return [];
+    }
+
+    const user = await ctx.db.get(userId);
+    if (!user) {
+      return [];
+    }
+
+    // If user is a regular user, get emergencies they created
+    if (user.role === "user") {
+      return await ctx.db
+        .query("emergencies")
+        .withIndex("fromUser", (q) => q.eq("fromUser", userId))
+        .order("desc")
+        .collect();
+    }
+
+    // If user is a caregiver, get emergencies from the user they're associated with
+    if (user.role === "caregiver" && user.associatedUser) {
+      return await ctx.db
+        .query("emergencies")
+        .withIndex("fromUser", (q) => q.eq("fromUser", user.associatedUser!))
+        .order("desc")
+        .collect();
+    }
+
+    return [];
   },
 });

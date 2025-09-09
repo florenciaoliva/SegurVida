@@ -13,6 +13,7 @@ const schema = defineSchema({
     phoneVerificationTime: v.optional(v.number()),
     isAnonymous: v.optional(v.boolean()),
     role: v.union(v.literal("user"), v.literal("caregiver"), v.literal("admin")),
+    // TODO: if we want to have an array here, we probably want to create a separate table for that
     associatedUser: v.optional(v.id("users")), // for caregivers users, the user they are associated with
   })
     .index("email", ["email"])
