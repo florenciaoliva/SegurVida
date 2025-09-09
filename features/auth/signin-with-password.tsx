@@ -121,7 +121,7 @@ export function SignInWithPassword({
   passwordRequirements = DEFAULT_PASSWORD_REQUIREMENTS,
 }: {
   provider?: string;
-  handleSent?: (email: string) => void;
+  handleSent?: (email: string, isSignUp?: boolean) => void;
   handlePasswordReset?: () => void;
   passwordRequirements?: PasswordRequirements | string;
 }) {
@@ -197,7 +197,7 @@ export function SignInWithPassword({
 
     signIn(provider ?? "password", formData)
       .then(() => {
-        handleSent?.(email);
+        handleSent?.(email, flow === "signUp");
       })
       .catch((error) => {
         console.error(error);
@@ -317,12 +317,6 @@ export function SignInWithPassword({
 
           <View className="flex-row justify-between items-center mb-2">
             <Text className="text-base font-medium text-gray-800">Password</Text>
-            {/* TODO: check this and implement it: https://labs.convex.dev/auth/config/passwords#email-reset-setup */}
-            {/* {handlePasswordReset && flow === "signIn" && (
-              <TouchableOpacity onPress={handlePasswordReset}>
-                <Text className="text-blue-500 text-sm">Forgot your password?</Text>
-              </TouchableOpacity>
-            )} */}
           </View>
 
           <TextInput

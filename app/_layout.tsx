@@ -4,7 +4,7 @@ import { Stack } from "expo-router";
 import * as SecureStore from "expo-secure-store";
 import { ActivityIndicator, Platform, View } from "react-native";
 import "../global.css";
-import SignIn from "./sign-in";
+import Auth from "./auth";
 
 const convex = new ConvexReactClient(process.env.EXPO_PUBLIC_CONVEX_URL!, {
   unsavedChangesWarning: false,
@@ -26,7 +26,7 @@ function RootLayoutNav() {
       </AuthLoading>
 
       <Unauthenticated>
-        <SignIn />
+        <Auth />
       </Unauthenticated>
 
       <Authenticated>

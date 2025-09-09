@@ -7,6 +7,8 @@ const PasswordWithProfile = Password<DataModel>({
     return {
       email: params.email as string,
       role: params.role as "user" | "caregiver" | "admin",
+      name: params.name as string,
+      phone: params.phone as string | undefined,
     };
   },
 });

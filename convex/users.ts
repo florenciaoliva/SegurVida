@@ -82,3 +82,25 @@ export const updateMyCaregiversList = mutation({
     return { success: true };
   },
 });
+
+// Update user profile information
+export const updateProfile = mutation({
+  args: {
+    name: v.optional(v.string()),
+    phone: v.optional(v.string()),
+  },
+  handler: async (ctx, args) => {
+    const userId = await getAuthUserId(ctx);
+    if (!userId) {
+      throw new Error("User not authenticated");
+    }
+
+    const updates: any = {};
+    if (args.name !== undefined) updates.name = args.name;
+    if (args.phone !== undefined) updates.phone = args.phone;
+
+    await ctx.db.patch(userId, updates);
+
+    return { success: true };
+  },
+});
