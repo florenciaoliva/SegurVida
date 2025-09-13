@@ -2,12 +2,14 @@ import { INVALID_PASSWORD } from "@/convex/errors";
 import { cn } from "@/lib/utils";
 import { useAuthActions } from "@convex-dev/auth/react";
 import { ConvexError } from "convex/values";
+import { Eye, EyeOff } from "lucide-react-native";
 import { useMemo, useState } from "react";
 import {
   ActivityIndicator,
   Alert,
   KeyboardAvoidingView,
   Platform,
+  SafeAreaView,
   ScrollView,
   Text,
   TextInput,
@@ -152,9 +154,13 @@ export function SignUpForm({ onSwitchToSignIn }: SignUpFormProps) {
   // Credentials step state
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [userRole, setUserRole] = useState<UserRole>("user");
   const [emailTouched, setEmailTouched] = useState(false);
   const [passwordTouched, setPasswordTouched] = useState(false);
+  const [confirmPasswordTouched, setConfirmPasswordTouched] = useState(false);
 
   // Profile step state
   const [name, setName] = useState("");
@@ -186,14 +192,21 @@ export function SignUpForm({ onSwitchToSignIn }: SignUpFormProps) {
     return { checks, isValid };
   }, [password, requirements]);
 
+  // Password confirmation validation
+  const passwordsMatch = useMemo(() => {
+    return password === confirmPassword;
+  }, [password, confirmPassword]);
+
   // Check if current step is valid
   const isStepValid = useMemo(() => {
     if (step === "credentials") {
-      return isEmailValid && passwordValidation.isValid;
+      return (
+        isEmailValid && passwordValidation.isValid && passwordsMatch && confirmPassword.length > 0
+      );
     }
     // Profile step - name is required
     return name.trim().length > 0;
-  }, [step, isEmailValid, passwordValidation.isValid, name]);
+  }, [step, isEmailValid, passwordValidation.isValid, passwordsMatch, confirmPassword, name]);
 
   const handleNextStep = () => {
     if (!isStepValid) {
@@ -264,168 +277,229 @@ export function SignUpForm({ onSwitchToSignIn }: SignUpFormProps) {
     );
   };
 
-  const renderCredentialsStep = () => (
-    <>
-      <View className="mb-8">
-        <Text className="text-3xl font-bold text-gray-800 text-center mb-2">Crear Cuenta</Text>
-        <Text className="text-base text-gray-600 text-center">
-          Únete a SegurVida para estar protegido
-        </Text>
-        <View className="flex-row justify-center mt-4">
-          <View className="w-2 h-2 rounded-full bg-blue-500 mx-1" />
-          <View className="w-2 h-2 rounded-full bg-gray-300 mx-1" />
-        </View>
-      </View>
-
-      <Text className="text-base font-medium mb-2 text-gray-800">Email</Text>
-      <TextInput
-        className={cn(
-          "border-2 rounded-lg px-3 py-4 text-base mb-4 bg-white text-gray-800 leading-tight",
-          emailTouched && !isEmailValid && "border-red-500 mb-1",
-          emailTouched && isEmailValid && "border-green-500",
-          (!emailTouched || (!isEmailValid && !emailTouched)) && "border-gray-300"
-        )}
-        value={email}
-        onChangeText={setEmail}
-        onBlur={() => setEmailTouched(true)}
-        placeholder="tu@email.com"
-        placeholderTextColor="#999"
-        keyboardType="email-address"
-        autoCapitalize="none"
-        autoComplete="email"
-        editable={!submitting}
-      />
-      {emailTouched && !isEmailValid && (
-        <Text className="text-red-500 text-xs mb-3 -mt-3">
-          Por favor ingresa un email válido
-        </Text>
-      )}
-
-      <Text className="text-base font-medium mb-2 text-gray-800">Contraseña</Text>
-      <TextInput
-        className={cn(
-          "border-2 rounded-lg px-3 py-4 text-base mb-4 bg-white text-gray-800 leading-tight",
-          passwordTouched && !passwordValidation.isValid && "border-red-500",
-          passwordTouched && passwordValidation.isValid && "border-green-500",
-          !passwordTouched && "border-gray-300"
-        )}
-        value={password}
-        onChangeText={setPassword}
-        onBlur={() => setPasswordTouched(true)}
-        placeholder="Crea una contraseña segura"
-        placeholderTextColor="#999"
-        secureTextEntry
-        autoComplete="new-password"
-        editable={!submitting}
-      />
-
-      {renderPasswordRequirements()}
-
-      <UserTypeSelector selectedRole={userRole} onSelectRole={setUserRole} />
-
-      <TouchableOpacity
-        className={cn(
-          "rounded-lg p-4 items-center mb-4",
-          !isStepValid || submitting ? "bg-gray-300 opacity-70" : "bg-blue-500"
-        )}
-        onPress={handleNextStep}
-        disabled={!isStepValid || submitting}
-      >
-        <Text className="text-base font-semibold text-white">Continuar</Text>
-      </TouchableOpacity>
-
-      <TouchableOpacity onPress={onSwitchToSignIn} disabled={submitting}>
-        <Text className="text-blue-500 text-sm text-center mt-2">
-          ¿Ya tienes cuenta? Inicia sesión
-        </Text>
-      </TouchableOpacity>
-    </>
-  );
-
-  const renderProfileStep = () => (
-    <>
-      <View className="mb-8">
-        <Text className="text-3xl font-bold text-gray-800 text-center mb-2">
-          Completa tu perfil
-        </Text>
-        <Text className="text-base text-gray-600 text-center">
-          Necesitamos algunos datos más
-        </Text>
-        <View className="flex-row justify-center mt-4">
-          <View className="w-2 h-2 rounded-full bg-gray-300 mx-1" />
-          <View className="w-2 h-2 rounded-full bg-blue-500 mx-1" />
-        </View>
-      </View>
-
-      <Text className="text-base font-medium mb-2 text-gray-800">Nombre completo</Text>
-      <TextInput
-        className="border-2 border-gray-300 rounded-lg px-3 py-4 text-base mb-4 bg-white text-gray-800 leading-tight focus:border-blue-500"
-        value={name}
-        onChangeText={setName}
-        placeholder="Tu nombre completo"
-        placeholderTextColor="#999"
-        autoCapitalize="words"
-        autoComplete="name"
-        editable={!submitting}
-      />
-
-      <Text className="text-base font-medium mb-2 text-gray-800">
-        Teléfono (opcional)
-      </Text>
-      <TextInput
-        className="border-2 border-gray-300 rounded-lg px-3 py-4 text-base mb-2 bg-white text-gray-800 leading-tight focus:border-blue-500"
-        value={phone}
-        onChangeText={setPhone}
-        placeholder="+54 11 1234-5678"
-        placeholderTextColor="#999"
-        keyboardType="phone-pad"
-        autoComplete="tel"
-        editable={!submitting}
-      />
-      <Text className="text-xs text-gray-500 mb-6">
-        Lo usaremos solo para notificaciones de emergencia
-      </Text>
-
-      <View className="flex-row gap-3">
-        <TouchableOpacity
-          className="flex-1 border-2 border-gray-300 rounded-lg p-4 items-center"
-          onPress={() => setStep("credentials")}
-          disabled={submitting}
-        >
-          <Text className="text-base font-semibold text-gray-700">Atrás</Text>
-        </TouchableOpacity>
-
-        <TouchableOpacity
-          className={cn(
-            "flex-1 rounded-lg p-4 items-center",
-            !isStepValid || submitting ? "bg-gray-300 opacity-70" : "bg-blue-500"
-          )}
-          onPress={handleSignUp}
-          disabled={!isStepValid || submitting}
-        >
-          {submitting ? (
-            <ActivityIndicator color="#fff" />
-          ) : (
-            <Text className="text-base font-semibold text-white">Crear cuenta</Text>
-          )}
-        </TouchableOpacity>
-      </View>
-    </>
-  );
-
   return (
-    <KeyboardAvoidingView
-      behavior={Platform.OS === "ios" ? "padding" : "height"}
-      className="flex-1"
-    >
-      <ScrollView
-        showsVerticalScrollIndicator={false}
-        contentContainerStyle={{ flexGrow: 1, justifyContent: "center" }}
+    <SafeAreaView style={{ flex: 1 }}>
+      <KeyboardAvoidingView
+        behavior={Platform.OS === "ios" ? "padding" : "height"}
+        style={{ flex: 1 }}
+        keyboardVerticalOffset={Platform.OS === "ios" ? 60 : 0}
       >
-        <View className="p-5 justify-center">
-          {step === "credentials" ? renderCredentialsStep() : renderProfileStep()}
-        </View>
-      </ScrollView>
-    </KeyboardAvoidingView>
+        <ScrollView
+          showsVerticalScrollIndicator={false}
+          contentContainerStyle={{ flexGrow: 1 }}
+          keyboardShouldPersistTaps="handled"
+          className="flex-1"
+        >
+          <View className="p-5 justify-center min-h-full">
+            {step === "credentials" ? (
+              <>
+                <View className="mb-8">
+                  <Text className="text-3xl font-bold text-gray-800 text-center mb-2">
+                    Crear Cuenta
+                  </Text>
+                  <Text className="text-base text-gray-600 text-center">
+                    Únete a SegurVida para estar protegido
+                  </Text>
+                  <View className="flex-row justify-center mt-4">
+                    <View className="w-2 h-2 rounded-full bg-blue-500 mx-1" />
+                    <View className="w-2 h-2 rounded-full bg-gray-300 mx-1" />
+                  </View>
+                </View>
+
+                <Text className="text-base font-medium mb-2 text-gray-800">Email</Text>
+                <TextInput
+                  className={cn(
+                    "border-2 rounded-lg px-3 py-4 text-base mb-4 bg-white text-gray-800 leading-tight",
+                    emailTouched && !isEmailValid && "border-red-500 mb-1",
+                    emailTouched && isEmailValid && "border-green-500",
+                    (!emailTouched || (!isEmailValid && !emailTouched)) && "border-gray-300"
+                  )}
+                  value={email}
+                  onChangeText={setEmail}
+                  onBlur={() => setEmailTouched(true)}
+                  placeholder="tu@email.com"
+                  placeholderTextColor="#999"
+                  keyboardType="email-address"
+                  autoCapitalize="none"
+                  autoComplete="email"
+                  editable={!submitting}
+                />
+                {emailTouched && !isEmailValid && (
+                  <Text className="text-red-500 text-xs mb-3 -mt-3">
+                    Por favor ingresa un email válido
+                  </Text>
+                )}
+
+                <Text className="text-base font-medium mb-2 text-gray-800">Contraseña</Text>
+                <View className="relative mb-4">
+                  <TextInput
+                    className={cn(
+                      "border-2 rounded-lg px-3 py-4 pr-12 text-base bg-white text-gray-800 leading-tight",
+                      passwordTouched && !passwordValidation.isValid && "border-red-500",
+                      passwordTouched && passwordValidation.isValid && "border-green-500",
+                      !passwordTouched && "border-gray-300"
+                    )}
+                    value={password}
+                    onChangeText={setPassword}
+                    onBlur={() => setPasswordTouched(true)}
+                    placeholder="Crea una contraseña segura"
+                    placeholderTextColor="#999"
+                    secureTextEntry={!showPassword}
+                    autoComplete="new-password"
+                    editable={!submitting}
+                  />
+                  <TouchableOpacity
+                    className="absolute right-3 top-1/2 -translate-y-1/2"
+                    style={{ transform: [{ translateY: -12 }] }}
+                    onPress={(e) => {
+                      e.stopPropagation();
+                      setShowPassword(!showPassword);
+                    }}
+                  >
+                    {showPassword ? (
+                      <EyeOff size={20} color="#666" />
+                    ) : (
+                      <Eye size={20} color="#666" />
+                    )}
+                  </TouchableOpacity>
+                </View>
+
+                {renderPasswordRequirements()}
+
+                <Text className="text-base font-medium mb-2 text-gray-800">
+                  Confirmar Contraseña
+                </Text>
+                <View className="relative mb-1">
+                  <TextInput
+                    className={cn(
+                      "border-2 rounded-lg px-3 py-4 pr-12 text-base bg-white text-gray-800 leading-tight",
+                      confirmPasswordTouched && !passwordsMatch && "border-red-500",
+                      confirmPasswordTouched &&
+                        passwordsMatch &&
+                        confirmPassword.length > 0 &&
+                        "border-green-500",
+                      !confirmPasswordTouched && "border-gray-300"
+                    )}
+                    value={confirmPassword}
+                    onChangeText={setConfirmPassword}
+                    onBlur={() => setConfirmPasswordTouched(true)}
+                    placeholder="Repite tu contraseña"
+                    placeholderTextColor="#999"
+                    secureTextEntry={!showConfirmPassword}
+                    autoComplete="new-password"
+                    editable={!submitting}
+                  />
+                  <TouchableOpacity
+                    className="absolute right-3 top-1/2 -translate-y-1/2"
+                    style={{ transform: [{ translateY: -12 }] }}
+                    onPress={() => setShowConfirmPassword(!showConfirmPassword)}
+                  >
+                    {showConfirmPassword ? (
+                      <EyeOff size={20} color="#666" />
+                    ) : (
+                      <Eye size={20} color="#666" />
+                    )}
+                  </TouchableOpacity>
+                </View>
+                {confirmPasswordTouched && !passwordsMatch && confirmPassword.length > 0 && (
+                  <Text className="text-red-500 text-xs mb-3">Las contraseñas no coinciden</Text>
+                )}
+                {(!confirmPasswordTouched || passwordsMatch || confirmPassword.length === 0) && (
+                  <View className="mb-4" />
+                )}
+
+                <TouchableOpacity
+                  className={cn(
+                    "rounded-lg p-4 items-center mb-4",
+                    !isStepValid || submitting ? "bg-gray-300 opacity-70" : "bg-blue-500"
+                  )}
+                  onPress={handleNextStep}
+                  disabled={!isStepValid || submitting}
+                >
+                  <Text className="text-base font-semibold text-white">Continuar</Text>
+                </TouchableOpacity>
+
+                <TouchableOpacity onPress={onSwitchToSignIn} disabled={submitting}>
+                  <Text className="text-blue-500 text-sm text-center mt-2">
+                    ¿Ya tienes cuenta? Inicia sesión
+                  </Text>
+                </TouchableOpacity>
+              </>
+            ) : (
+              <>
+                <View className="mb-8">
+                  <Text className="text-3xl font-bold text-gray-800 text-center mb-2">
+                    Completa tu perfil
+                  </Text>
+                  <Text className="text-base text-gray-600 text-center">
+                    Necesitamos algunos datos más
+                  </Text>
+                  <View className="flex-row justify-center mt-4">
+                    <View className="w-2 h-2 rounded-full bg-gray-300 mx-1" />
+                    <View className="w-2 h-2 rounded-full bg-blue-500 mx-1" />
+                  </View>
+                </View>
+
+                <UserTypeSelector selectedRole={userRole} onSelectRole={setUserRole} />
+
+                <Text className="text-base font-medium mb-2 text-gray-800">Nombre completo</Text>
+                <TextInput
+                  className="border-2 border-gray-300 rounded-lg px-3 py-4 text-base mb-4 bg-white text-gray-800 leading-tight focus:border-blue-500"
+                  value={name}
+                  onChangeText={setName}
+                  placeholder="Tu nombre completo"
+                  placeholderTextColor="#999"
+                  autoCapitalize="words"
+                  autoComplete="name"
+                  editable={!submitting}
+                />
+
+                <Text className="text-base font-medium mb-2 text-gray-800">
+                  Teléfono (opcional)
+                </Text>
+                <TextInput
+                  className="border-2 border-gray-300 rounded-lg px-3 py-4 text-base mb-2 bg-white text-gray-800 leading-tight focus:border-blue-500"
+                  value={phone}
+                  onChangeText={setPhone}
+                  placeholder="+54 11 1234-5678"
+                  placeholderTextColor="#999"
+                  keyboardType="phone-pad"
+                  autoComplete="tel"
+                  editable={!submitting}
+                />
+                <Text className="text-xs text-gray-500 mb-6">
+                  Lo usaremos solo para notificaciones de emergencia
+                </Text>
+
+                <View className="flex-row gap-3">
+                  <TouchableOpacity
+                    className="flex-1 border-2 border-gray-300 rounded-lg p-4 items-center"
+                    onPress={() => setStep("credentials")}
+                    disabled={submitting}
+                  >
+                    <Text className="text-base font-semibold text-gray-700">Atrás</Text>
+                  </TouchableOpacity>
+
+                  <TouchableOpacity
+                    className={cn(
+                      "flex-1 rounded-lg p-4 items-center",
+                      !isStepValid || submitting ? "bg-gray-300 opacity-70" : "bg-blue-500"
+                    )}
+                    onPress={handleSignUp}
+                    disabled={!isStepValid || submitting}
+                  >
+                    {submitting ? (
+                      <ActivityIndicator color="#fff" />
+                    ) : (
+                      <Text className="text-base font-semibold text-white">Crear cuenta</Text>
+                    )}
+                  </TouchableOpacity>
+                </View>
+              </>
+            )}
+          </View>
+        </ScrollView>
+      </KeyboardAvoidingView>
+    </SafeAreaView>
   );
 }
