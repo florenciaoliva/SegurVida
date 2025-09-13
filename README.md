@@ -1,58 +1,140 @@
-# Welcome to your Expo app 👋
+# Guía de Instalación y Configuración
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+Este documento explica paso a paso cómo instalar las dependencias, configurar **Convex**, **Expo**, y **Firebase**, y levantar la aplicación del proyecto **SegurVida**.
 
-## Get started
+---
 
-1. Install dependencies
+## 1. Instalación de Node y PNPM
 
+1. Instalar **nvm**:  
    ```bash
-   npm install
+   curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.3/install.sh | bash
+   ```
+   **Nota** esto es para instalar node, si ya lo tienen usen el que tienen o buscar algun tutorial.
+2. Verificar instalación:  
+   ```bash
+   nvm --version
+   ```
+3. Instalar Node LTS:  
+   ```bash
+   nvm install --lts
+   ```
+4. Verificar instalación de Node:  
+   ```bash
+   node --version
+   ```
+5. Instalar **pnpm** (IMPORTANTE: no usar `npm`, ya que puede corromper `pnpm-lock.yaml`):  
+   ```bash
+   npm install -g pnpm
+   ```
+6. Verificar instalación de pnpm:  
+   ```bash
+   pnpm --version
+   ```
+7. Instalar dependencias del proyecto (en el root del repositorio):  
+   ```bash
+   pnpm install
    ```
 
-2. Start the app
+---
 
+## 2. Configuración de Convex
+
+1. Crear una cuenta en [Convex](https://www.convex.dev/).
+2. Enviar la direccion de correo (con la que creaste la cuenta) a Flor para recibir la invitación al **team SegurVida**.
+3. Aceptar la invitación y confirmar que puedes ver el proyecto **SegurVida** en Convex.
+4. Levantar Convex:  
+   ```bash
+   pnpm convex dev
+   ```
+   Durante la primera ejecución:
+   - `Login or create and account.` 
+   - `Device name` --> Aceptar la opcion por defecto o escribir una
+   - `Open the browser?` --> Y
+   - Completar el login.
+   - `Choose an existing project`
+   - Seleccionan el Team `SegurVida`
+   - `Configure project SegurVida?` --> Y
+   - Si todo salió bien, deberías ver:  
+     ```
+     Convex functions ready! (X.XXs)
+     ```
+5. **Nota:** Convex debe estar siempre corriendo con:  
+   ```bash
+   pnpm convex dev
+   ```
+   Esto permite que la app en development se conecte a la base de datos.
+
+---
+## 3. Variables de entorno
+
+1. En Convex, ir al entorno `Production`.
+2. Copiar las variables de entorno (`Copy All`).
+3. Cambiar al entorno `Development` y pegarlas allí. 
+   ![variables de entorno](image.png)
+   Le dan a `Copy All`, cambian a su `Development` en convex de vuelta, y pegan esas dos variables. 
+
+---
+
+## 4. Levantar la aplicación con Expo
+
+1. Instalar **npx** si no lo tienes:  
+   ```bash
+   npm install -g npx
+   ```
+2. Ejecutar la app:  
    ```bash
    npx expo start
    ```
+   Si todo sale bien deberías ver:  
+   ```
+   Logs for your project will appear below. Press Ctrl+C to exit.
+   ```
+3. Terminar la ejecucion, ya que la tendremos que comenzar de nuevo mas adelante.
+---
 
-In the output, you'll find options to open the app in a
+## 5. Configuración de Firebase (Notificaciones Push)
 
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
+1. Ingresar a [Firebase Console](https://console.firebase.google.com/).
+2. Crear una cuenta y enviar tu direccion de correo (con la que te creaste la cuenta) a Flor para recibir acceso al proyecto **SegurVida**.
+3. Aceptar la invitación en tu correo.
 
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
+---
 
-## Get a fresh project
+## 6. Configuración de Expo y EAS
 
-When you're ready, run:
+1. Crear una cuenta en [Expo](https://expo.dev/).
+2. Enviar tu correo al administrador para recibir acceso al proyecto.
+3. Instalar **eas-cli**:  
+   ```bash
+   npm install --global eas-cli
+   ```
+4. Inicializar con el ID del proyecto:  
+   ```bash
+   eas init --id ecaafaf3-d301-4c24-a078-d2ed8c7807f3
+   ```
 
-```bash
-npm run reset-project
-```
+---
 
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
+## 7. Realizar un Build de Prueba
 
-## Learn more
+1. Asegurarse de estar en la rama `main` y con los últimos cambios.
+2. Ejecutar:  
+   ```bash
+   eas build --profile development
+   ```
+3. Seleccionar la plataforma (**Android**).
+4. Generar un nuevo Android Keystore (`Y`).
+5. Revisar el link de logs que aparecerá en consola.
+6. Al finalizar, se mostrará un **código QR** para instalar la app en tu celular.
+   - Cuando pregunte `Install and run the Android build on an emulator?`, responder `n` (el sistema de notificaciones no funciona en emulador).
+7. Una vez instalada la app en el celular:
+   - Ejecutar en tu PC:  
+     ```bash
+     npx expo start
+     ```
+   - En el celular, seleccionar el servidor o con la camara del telefono, escanear el QR de la terminal, te va a abrir la app que descargaste automaticamente y empezar el build local.
+8. Crear una cuenta dentro de la app y comenzar a usarla.  
+   **Nota:** recuerda tener corriendo `pnpm convex dev`.
 
-To learn more about developing your project with Expo, look at the following resources:
-
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
-
-## Join the community
-
-Join our community of developers creating universal apps.
-
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
-
-# Create google-services.json file
-
-https://stackoverflow.com/questions/78301058/expo-push-notifications-google-services-json-is-missing-for-firebase
-
-# Setup notifications
-
-https://docs.expo.dev/push-notifications/push-notifications-setup/#get-credentials-for-development-builds
+---

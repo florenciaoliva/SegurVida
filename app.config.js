@@ -1,5 +1,6 @@
 module.exports = {
   expo: {
+    owner: "segurvida",
     name: "segurvida",
     slug: "segurvida",
     version: "1.0.0",
@@ -46,7 +47,7 @@ module.exports = {
     extra: {
       router: {},
       eas: {
-        projectId: "5c598e26-d525-4d5b-94bb-99448278bab3",
+        projectId: "ecaafaf3-d301-4c24-a078-d2ed8c7807f3",
       },
     },
   },
