@@ -26,7 +26,7 @@ export default function Auth() {
           style={{ opacity: 0.1 }}
           resizeMode="center"
         />
-        
+
         {/* Content */}
         <View className="flex-1 justify-center">
           {workflow === "signUp" ? (

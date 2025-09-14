@@ -1,8 +1,9 @@
+import Loading from "@/components/Loading";
+import { StackLayout } from "@/components/StackLayout";
 import { ConvexAuthProvider } from "@convex-dev/auth/react";
 import { Authenticated, AuthLoading, ConvexReactClient, Unauthenticated } from "convex/react";
-import { Stack } from "expo-router";
 import * as SecureStore from "expo-secure-store";
-import { ActivityIndicator, Platform, View } from "react-native";
+import { Platform } from "react-native";
 import "../global.css";
 import Auth from "./auth";
 
@@ -20,9 +21,7 @@ function RootLayoutNav() {
   return (
     <>
       <AuthLoading>
-        <View className="flex-1 justify-center items-center bg-gray-100">
-          <ActivityIndicator size="large" color="#007AFF" />
-        </View>
+        <Loading />
       </AuthLoading>
 
       <Unauthenticated>
@@ -30,21 +29,7 @@ function RootLayoutNav() {
       </Unauthenticated>
 
       <Authenticated>
-        <Stack>
-          <Stack.Screen
-            name="(tabs)"
-            options={{
-              headerShown: false,
-            }}
-          />
-          <Stack.Screen
-            name="index"
-            options={{
-              title: "Home",
-              headerShown: true,
-            }}
-          />
-        </Stack>
+        <StackLayout />
       </Authenticated>
     </>
   );

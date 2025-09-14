@@ -22,7 +22,7 @@ export default function Home() {
       <Text className="text-lg text-green-500 mb-10 text-center font-semibold">
         Ya estás logueado!
       </Text>
-      
+
       <View className="flex-1 justify-center">
         <EmergencyButton />
       </View>
