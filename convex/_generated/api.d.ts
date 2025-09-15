@@ -9,6 +9,7 @@
  */
 
 import type * as auth from "../auth.js";
+import type * as connectionCodes from "../connectionCodes.js";
 import type * as emergencies from "../emergencies.js";
 import type * as errors from "../errors.js";
 import type * as http from "../http.js";
@@ -31,6 +32,7 @@ import type {
  */
 declare const fullApi: ApiFromModules<{
   auth: typeof auth;
+  connectionCodes: typeof connectionCodes;
   emergencies: typeof emergencies;
   errors: typeof errors;
   http: typeof http;

@@ -2,7 +2,7 @@ import { INVALID_PASSWORD } from "@/convex/errors";
 import { cn } from "@/lib/utils";
 import { useAuthActions } from "@convex-dev/auth/react";
 import { ConvexError } from "convex/values";
-import { Eye, EyeOff } from "lucide-react-native";
+import { Ionicons } from "@expo/vector-icons";
 import { useMemo, useState } from "react";
 import {
   ActivityIndicator,
@@ -356,11 +356,11 @@ export function SignUpForm({ onSwitchToSignIn }: SignUpFormProps) {
                       setShowPassword(!showPassword);
                     }}
                   >
-                    {showPassword ? (
-                      <EyeOff size={20} color="#666" />
-                    ) : (
-                      <Eye size={20} color="#666" />
-                    )}
+                    <Ionicons
+                      name={showPassword ? "eye-off-outline" : "eye-outline"}
+                      size={20}
+                      color="#666"
+                    />
                   </TouchableOpacity>
                 </View>
 
@@ -394,11 +394,11 @@ export function SignUpForm({ onSwitchToSignIn }: SignUpFormProps) {
                     style={{ transform: [{ translateY: -12 }] }}
                     onPress={() => setShowConfirmPassword(!showConfirmPassword)}
                   >
-                    {showConfirmPassword ? (
-                      <EyeOff size={20} color="#666" />
-                    ) : (
-                      <Eye size={20} color="#666" />
-                    )}
+                    <Ionicons
+                      name={showConfirmPassword ? "eye-off-outline" : "eye-outline"}
+                      size={20}
+                      color="#666"
+                    />
                   </TouchableOpacity>
                 </View>
                 {confirmPasswordTouched && !passwordsMatch && confirmPassword.length > 0 && (

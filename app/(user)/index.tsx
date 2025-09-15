@@ -1,9 +1,17 @@
 import { EmergencyButton } from "@/features/emergency/emergency-button";
+import { ConnectionCodeModal } from "@/features/caregiver/ConnectionCodeModal";
 import { useAuthActions } from "@convex-dev/auth/react";
+import { useMutation } from "convex/react";
+import { api } from "@/convex/_generated/api";
 import { Alert, Text, TouchableOpacity, View } from "react-native";
+import { useState } from "react";
+import { Ionicons } from "@expo/vector-icons";
 
 export default function Home() {
   const { signOut } = useAuthActions();
+  const [modalVisible, setModalVisible] = useState(false);
+  const [connectionCode, setConnectionCode] = useState<string | null>(null);
+  const generateCode = useMutation(api.connectionCodes.generateCode);
 
   const handleSignOut = async () => {
     try {
@@ -11,6 +19,16 @@ export default function Home() {
       // After sign out, the auth state will change and redirect to sign-in automatically
     } catch (error) {
       Alert.alert("Error", "Failed to sign out. Please try again.");
+    }
+  };
+
+  const handleAddCaregiver = async () => {
+    try {
+      const result = await generateCode();
+      setConnectionCode(result.code);
+      setModalVisible(true);
+    } catch (error) {
+      Alert.alert("Error", "No se pudo generar el código. Intenta de nuevo.");
     }
   };
 
@@ -26,12 +44,27 @@ export default function Home() {
       <View className="flex-1 justify-center">
         <EmergencyButton />
       </View>
+
+      <TouchableOpacity
+        className="bg-blue-500 px-6 py-3 rounded-lg self-center mb-4 flex-row items-center"
+        onPress={handleAddCaregiver}
+      >
+        <Ionicons name="person-add" size={20} color="white" style={{ marginRight: 8 }} />
+        <Text className="text-white text-base font-semibold">Agregar Nuevo Cuidador</Text>
+      </TouchableOpacity>
+
       <TouchableOpacity
         className="bg-red-500 px-8 py-4 rounded-lg self-center"
         onPress={handleSignOut}
       >
         <Text className="text-white text-base font-semibold">Cerrar sesión</Text>
       </TouchableOpacity>
+
+      <ConnectionCodeModal
+        visible={modalVisible}
+        onClose={() => setModalVisible(false)}
+        code={connectionCode}
+      />
     </View>
   );
 }

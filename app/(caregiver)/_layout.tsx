@@ -23,17 +23,17 @@ export default function CaregiverTabsLayout() {
       }}
     >
       <Tabs.Screen
-        name="profile"
-        options={{
-          title: "Perfil",
-          tabBarIcon: ({ color, size }) => <Ionicons name="person" size={size} color={color} />,
-        }}
-      />
-      <Tabs.Screen
         name="index"
         options={{
           title: "Alertas",
           tabBarIcon: ({ color, size }) => <Ionicons name="warning" size={size} color={color} />,
+        }}
+      />
+      <Tabs.Screen
+        name="profile"
+        options={{
+          title: "Perfil",
+          tabBarIcon: ({ color, size }) => <Ionicons name="person" size={size} color={color} />,
         }}
       />
       <Tabs.Screen
